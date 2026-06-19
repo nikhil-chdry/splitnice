@@ -8,15 +8,24 @@ const membersByGroup = {
   Flatmates: ["You", "Arjun", "Riya"],
   "Weekend Plans": ["You", "Priya", "Arjun", "Riya", "Vikram", "Aman"],
 };
+function createDefaultShares(members) {
+  return Object.fromEntries(
+    members.map((member) => [member, 1]),
+  );
+}
 
 function AddExpenseModal({ isOpen, onClose,onAddExpense }) {
 const [amount, setAmount] = useState("");
 const [showCalculator, setShowCalculator] = useState(false);
 const [exactAmounts, setExactAmounts] = useState({});
 const [description, setDescription] = useState("");
+const [percentageAmounts, setPercentageAmounts] = useState({});
 const category = getExpenseCategory(description);
 const [group, setGroup] = useState("Goa Trip");
 const [splitMethod, setSplitMethod] = useState("Equally");
+const [shareAmounts, setShareAmounts] = useState(() =>
+  createDefaultShares(membersByGroup["Goa Trip"]),
+);
 const [selectedMembers, setSelectedMembers] = useState(
   membersByGroup["Goa Trip"],
 );
@@ -31,15 +40,60 @@ const exactTotal = selectedMembers.reduce(
 );
 
 const remainingAmount = amountNumber - exactTotal;
+const percentageTotal = selectedMembers.reduce(
+  (total, member) =>
+    total + (Number(percentageAmounts[member]) || 0),
+  0,
+);
+const totalShares = selectedMembers.reduce(
+  (total, member) =>
+    total + (Number(shareAmounts[member]) || 0),
+  0,
+);
+
 
 const splitIsValid =
-  splitMethod === "Equally"
-    ? selectedMembers.length > 0
-    : splitMethod === "Exact"
-      ? selectedMembers.length > 0 &&
-        Math.abs(remainingAmount) < 0.01
-      : false;    
+  selectedMembers.length > 0 &&
+  (splitMethod === "Equally" ||
+    (splitMethod === "Exact" &&
+      Math.abs(remainingAmount) < 0.01) ||
+    (splitMethod === "Percentage" &&
+      Math.abs(percentageTotal - 100) < 0.01) ||
+    (splitMethod === "Shares" && totalShares > 0)); 
 
+function getMemberShare(member) {
+  if (totalShares === 0) return 0;
+
+  return (
+    (amountNumber * (Number(shareAmounts[member]) || 0)) /
+    totalShares
+  );
+}
+function changeShares(member, change) {
+  setShareAmounts((currentShares) => {
+    const currentValue = Number(currentShares[member]) || 1;
+    const nextValue = Math.max(1, currentValue + change);
+
+    return {
+      ...currentShares,
+      [member]: nextValue,
+    };
+  });
+}
+
+function getPercentageShare(member) {
+  const percentage = Number(percentageAmounts[member]) || 0;
+  return (amountNumber * percentage) / 100;
+}
+function updatePercentage(member, value) {
+  if (!/^\d*\.?\d{0,2}$/.test(value)) return;
+  if (Number(value) > 100) return;
+
+  setPercentageAmounts((currentPercentages) => ({
+    ...currentPercentages,
+    [member]: value,
+  }));
+}
 
 function updateExactAmount(member, value) {
   if (!/^\d*\.?\d{0,2}$/.test(value)) return;
@@ -55,6 +109,10 @@ function handleGroupChange(event) {
   setGroup(selectedGroup);
   setSelectedMembers(membersByGroup[selectedGroup]);
   setExactAmounts({});
+  setPercentageAmounts({});
+  setShareAmounts(
+  createDefaultShares(membersByGroup[selectedGroup]),
+);
 }
 
 function toggleMember(member) {
@@ -73,6 +131,10 @@ function resetForm() {
   setSplitMethod("Equally");
   setSelectedMembers(membersByGroup["Goa Trip"]);
   setExactAmounts({});
+  setPercentageAmounts({});
+  setShareAmounts(
+  createDefaultShares(membersByGroup["Goa Trip"]),
+);
 }
 function handleClose() {
   resetForm();
@@ -360,6 +422,150 @@ if (!isOpen) return null;
     </div>
   </fieldset>
 )}
+  {splitMethod === "Percentage" && (
+  <fieldset>
+    <legend className="text-sm font-semibold">
+      Split by percentage
+    </legend>
+
+    <div className="mt-3 flex justify-between rounded-2xl bg-white p-4 text-sm">
+      <span>Total: {percentageTotal.toFixed(2)}%</span>
+
+      <span
+        className={
+          Math.abs(percentageTotal - 100) < 0.01
+            ? "font-semibold text-positive"
+            : "font-semibold text-negative"
+        }
+      >
+        {Math.abs(percentageTotal - 100) < 0.01
+          ? "Fully allocated"
+          : percentageTotal < 100
+            ? `${(100 - percentageTotal).toFixed(2)}% left`
+            : `${(percentageTotal - 100).toFixed(2)}% over`}
+      </span>
+    </div>
+
+    <div className="mt-3 space-y-2">
+      {membersByGroup[group].map((member) => {
+        const isSelected = selectedMembers.includes(member);
+
+        return (
+          <div
+            key={member}
+            className="flex items-center justify-between gap-4 rounded-2xl bg-white p-4"
+          >
+            <label className="flex items-center gap-3 font-semibold">
+              <input
+                type="checkbox"
+                checked={isSelected}
+                onChange={() => toggleMember(member)}
+                className="size-4 accent-[#123f3a]"
+              />
+
+              {member}
+            </label>
+
+            <div className="text-right">
+              <div className="flex items-center border-b border-ink/20">
+                <input
+                  type="text"
+                  inputMode="decimal"
+                  disabled={!isSelected}
+                  value={percentageAmounts[member] ?? ""}
+                  onChange={(event) =>
+                    updatePercentage(member, event.target.value)
+                  }
+                  placeholder="0"
+                  className="w-20 bg-transparent p-2 text-right outline-none disabled:opacity-30"
+                />
+
+                <span>%</span>
+              </div>
+
+              {isSelected && (
+                <p className="mt-1 text-xs text-ink/45">
+                  ₹{getPercentageShare(member).toFixed(2)}
+                </p>
+              )}
+            </div>
+          </div>
+        );
+      })}
+    </div>
+  </fieldset>
+)}
+{splitMethod === "Shares" && (
+  <fieldset>
+    <legend className="text-sm font-semibold">
+      Split by shares
+    </legend>
+
+    <div className="mt-3 flex justify-between rounded-2xl bg-white p-4 text-sm">
+      <span>Total shares</span>
+      <span className="font-semibold">{totalShares}</span>
+    </div>
+
+    <div className="mt-3 space-y-2">
+      {membersByGroup[group].map((member) => {
+        const isSelected = selectedMembers.includes(member);
+
+        return (
+          <div
+            key={member}
+            className="flex items-center justify-between gap-4 rounded-2xl bg-white p-4"
+          >
+            <label className="flex items-center gap-3 font-semibold">
+              <input
+                type="checkbox"
+                checked={isSelected}
+                onChange={() => toggleMember(member)}
+                className="size-4 accent-[#123f3a]"
+              />
+
+              {member}
+            </label>
+
+            <div className="text-right">
+  <div className="flex items-center gap-3">
+    <button
+      type="button"
+      disabled={!isSelected || shareAmounts[member] <= 1}
+      onClick={() => changeShares(member, -1)}
+      className="grid size-9 place-items-center rounded-full border border-ink/15 disabled:opacity-30"
+      aria-label={`Remove one share from ${member}`}
+    >
+      −
+    </button>
+
+    <span className="min-w-8 text-center font-bold">
+      {shareAmounts[member] ?? 1}
+    </span>
+
+    <button
+      type="button"
+      disabled={!isSelected}
+      onClick={() => changeShares(member, 1)}
+      className="grid size-9 place-items-center rounded-full bg-brand text-white disabled:opacity-30"
+      aria-label={`Add one share to ${member}`}
+    >
+      +
+    </button>
+  </div>
+
+  {isSelected && (
+    <p className="mt-2 text-xs text-ink/45">
+      ₹{getMemberShare(member).toFixed(2)}
+    </p>
+  )}
+</div>
+          </div>
+        );
+      })}
+    </div>
+  </fieldset>
+)}
+
 
           <button
             type="submit"

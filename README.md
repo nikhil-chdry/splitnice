@@ -579,8 +579,6 @@ The current prototype does not yet provide:
 - Group join requests
 - Leader approval
 - Real friend management
-- Percentage splits
-- Share-based splits
 - Multiple payers
 - Recurring expenses
 - Receipt uploads
