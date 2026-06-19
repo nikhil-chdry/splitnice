@@ -18,3 +18,22 @@ body {
   background: var(--color-cream);
   color: var(--color-ink);
 }
+input[type="number"]::-webkit-inner-spin-button,
+input[type="number"]::-webkit-outer-spin-button {
+  margin: 0;
+  appearance: none;
+  -webkit-appearance: none;
+}
+
+input[type="number"] {
+  appearance: textfield;
+  -moz-appearance: textfield;
+}
+#activity ::-webkit-scrollbar {
+  width: 6px;
+}
+
+#activity ::-webkit-scrollbar-thumb {
+  background: rgba(16, 42, 42, 0.25);
+  border-radius: 999px;
+}

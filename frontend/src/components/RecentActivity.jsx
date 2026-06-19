@@ -1,4 +1,4 @@
-const activities = [
+export const initialActivities = [
   {
     id: 1,
     icon: "🍽️",
@@ -37,7 +37,7 @@ const activities = [
   },
 ];
 
-function RecentActivity() {
+function RecentActivity({ activities }) {
   return (
     <section
       id="activity"
@@ -59,7 +59,7 @@ function RecentActivity() {
           </p>
         </div>
 
-        <div className="overflow-hidden rounded-3xl bg-white text-ink">
+        <div className="max-h-[24rem] overflow-y-auto overscroll-contain rounded-3xl bg-white text-ink">
           {activities.map((activity) => (
             <article
               key={activity.id}
