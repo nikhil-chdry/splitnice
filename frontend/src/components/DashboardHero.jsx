@@ -1,25 +1,25 @@
-const balances = [
-  {
-    label: "Total balance",
-    amount: "+₹8,450",
-    note: "Overall, you are owed",
-    color: "text-positive",
-  },
-  {
-    label: "You owe",
-    amount: "₹2,350",
-    note: "Across 3 people",
-    color: "text-negative",
-  },
-  {
-    label: "You are owed",
-    amount: "₹10,800",
-    note: "Across 5 people",
-    color: "text-positive",
-  },
-];
+function DashboardHero({ onNewExpense, onCreateGroup, onSettle }) {
+  const balances = [
+    {
+      label: "Total balance",
+      amount: "+₹8,450",
+      note: "Overall, you are owed",
+      color: "text-positive",
+    },
+    {
+      label: "You owe",
+      amount: "₹2,350",
+      note: "Across 3 people",
+      color: "text-negative",
+    },
+    {
+      label: "You are owed",
+      amount: "₹10,800",
+      note: "Across 5 people",
+      color: "text-positive",
+    },
+  ];
 
-function DashboardHero() {
   return (
     <main
       id="dashboard"
@@ -35,7 +35,10 @@ function DashboardHero() {
             Money between friends, made simple.
           </h1>
 
-          <button className="w-fit rounded-full bg-lime px-6 py-4 font-semibold text-ink transition hover:scale-105">
+          <button
+            onClick={onSettle}
+            className="w-fit rounded-full bg-lime px-6 py-4 font-semibold text-ink transition hover:scale-105"
+          >
             Settle up
           </button>
         </div>
@@ -47,25 +50,29 @@ function DashboardHero() {
               className="rounded-3xl border border-ink/10 bg-white p-6 shadow-sm transition hover:-translate-y-1"
             >
               <p className="text-sm text-ink/50">{balance.label}</p>
-
               <p
                 className={`my-5 text-4xl font-bold tracking-tight ${balance.color}`}
               >
                 {balance.amount}
               </p>
-
               <p className="text-sm text-ink/60">{balance.note}</p>
             </article>
           ))}
         </section>
 
         <section className="mt-5 grid gap-4 md:grid-cols-3">
-          <button className="rounded-3xl bg-brand p-6 text-left text-white transition hover:-translate-y-1">
+          <button
+            onClick={onNewExpense}
+            className="rounded-3xl bg-brand p-6 text-left text-white transition hover:-translate-y-1"
+          >
             <span className="text-3xl">＋</span>
             <p className="mt-8 text-xl font-semibold">Add an expense</p>
           </button>
 
-          <button className="rounded-3xl bg-ink p-6 text-left text-white transition hover:-translate-y-1">
+          <button
+            onClick={onCreateGroup}
+            className="rounded-3xl bg-ink p-6 text-left text-white transition hover:-translate-y-1"
+          >
             <span className="text-3xl">◎</span>
             <p className="mt-8 text-xl font-semibold">Create a group</p>
           </button>

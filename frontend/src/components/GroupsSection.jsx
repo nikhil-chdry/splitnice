@@ -1,37 +1,4 @@
-const groups = [
-  {
-    id: 1,
-    icon: "🌴",
-    name: "Goa Trip",
-    members: "5 members",
-    expenses: "12 expenses",
-    balance: "You are owed ₹3,250",
-    balanceColor: "text-positive",
-    background: "bg-lime",
-  },
-  {
-    id: 2,
-    icon: "🏠",
-    name: "Flatmates",
-    members: "3 members",
-    expenses: "28 expenses",
-    balance: "You owe ₹1,800",
-    balanceColor: "text-negative",
-    background: "bg-white",
-  },
-  {
-    id: 3,
-    icon: "🎉",
-    name: "Weekend Plans",
-    members: "6 members",
-    expenses: "8 expenses",
-    balance: "All settled up",
-    balanceColor: "text-ink/50",
-    background: "bg-white",
-  },
-];
-
-function GroupsSection() {
+function GroupsSection({ groups }) {
   return (
     <section id="groups" className="bg-cream px-5 py-20 text-ink md:px-12 md:py-28">
       <div className="mx-auto max-w-7xl">
@@ -40,12 +7,10 @@ function GroupsSection() {
             <p className="mb-5 text-xs font-bold uppercase tracking-[0.2em] text-ink/50">
               Shared spaces
             </p>
-
             <h2 className="text-5xl font-bold tracking-[-0.05em] md:text-7xl">
               Your groups.
             </h2>
           </div>
-
           <button className="w-fit rounded-full border border-ink/20 px-6 py-3 font-semibold transition hover:bg-ink hover:text-white">
             Create group +
           </button>
@@ -61,7 +26,6 @@ function GroupsSection() {
                 <div className="grid size-16 place-items-center rounded-2xl bg-cream text-3xl">
                   {group.icon}
                 </div>
-
                 <button
                   className="grid size-10 place-items-center rounded-full border border-ink/10 text-xl"
                   aria-label={`Open ${group.name}`}
@@ -72,11 +36,9 @@ function GroupsSection() {
 
               <div className="mt-16">
                 <h3 className="text-2xl font-bold">{group.name}</h3>
-
                 <p className="mt-2 text-sm text-ink/50">
                   {group.members} · {group.expenses}
                 </p>
-
                 <p className={`mt-6 font-semibold ${group.balanceColor}`}>
                   {group.balance}
                 </p>
