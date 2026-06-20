@@ -1,0 +1,127 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        String   @id @default(uuid())
+  name      String
+  email     String   @unique
+  password  String
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  ledGroups Group[] @relation("GroupLeader")
+  memberships GroupMember[]
+  createdExpenses Expense[] @relation("ExpenseCreator")
+  paidExpenses Expense[] @relation("ExpensePayer")
+  expenseParticipants ExpenseParticipant[]
+  joinRequests JoinRequest[]
+  sentSettlements Settlement[] @relation("SettlementFrom")
+  receivedSettlements Settlement[] @relation("SettlementTo")
+
+  @@map("users")
+}
+
+model Group {
+  id        String   @id @default(uuid())
+  name      String
+  icon      String   @default("📝")
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  leaderId String @map("leader_id")
+  leader   User   @relation("GroupLeader", fields: [leaderId], references: [id])
+
+  members GroupMember[]
+  expenses Expense[]
+  joinRequests JoinRequest[]
+  settlements Settlement[]
+
+  @@map("groups")
+}
+
+model GroupMember {
+  id     String @id @default(uuid())
+  role   String @default("MEMBER")
+  joinedAt DateTime @default(now()) @map("joined_at")
+
+  userId  String @map("user_id")
+  user    User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  groupId String @map("group_id")
+  group   Group  @relation(fields: [groupId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, groupId])
+  @@map("group_members")
+}
+
+model JoinRequest {
+  id        String   @id @default(uuid())
+  status    String   @default("PENDING")
+  createdAt DateTime @default(now()) @map("created_at")
+
+  userId  String @map("user_id")
+  user    User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  groupId String @map("group_id")
+  group   Group  @relation(fields: [groupId], references: [id], onDelete: Cascade)
+
+  @@map("join_requests")
+}
+
+model Expense {
+  id          String @id @default(uuid())
+  title       String
+  amount      Int
+  splitMethod String @map("split_method")
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  creatorId String @map("creator_id")
+  creator   User   @relation("ExpenseCreator", fields: [creatorId], references: [id])
+
+  payerId String @map("payer_id")
+  payer   User   @relation("ExpensePayer", fields: [payerId], references: [id])
+
+  groupId String @map("group_id")
+  group   Group  @relation(fields: [groupId], references: [id], onDelete: Cascade)
+
+  participants ExpenseParticipant[]
+
+  @@map("expenses")
+}
+
+model ExpenseParticipant {
+  id    String @id @default(uuid())
+  share Int
+
+  userId String @map("user_id")
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  expenseId String @map("expense_id")
+  expense   Expense @relation(fields: [expenseId], references: [id], onDelete: Cascade)
+
+  @@map("expense_participants")
+}
+
+model Settlement {
+  id     String @id @default(uuid())
+  amount Int
+  createdAt DateTime @default(now()) @map("created_at")
+
+  fromUserId String @map("from_user_id")
+  fromUser   User   @relation("SettlementFrom", fields: [fromUserId], references: [id])
+
+  toUserId String @map("to_user_id")
+  toUser   User   @relation("SettlementTo", fields: [toUserId], references: [id])
+
+  groupId String? @map("group_id")
+  group   Group?  @relation(fields: [groupId], references: [id])
+
+  @@map("settlements")
+}
