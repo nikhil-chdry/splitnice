@@ -27,6 +27,17 @@ model User {
   @@map("users")
 }
 
+model PasswordReset {
+  id        String   @id @default(uuid())
+  email     String
+  token     String   @unique
+  expiresAt DateTime @map("expires_at")
+  used      Boolean  @default(false)
+  createdAt DateTime @default(now()) @map("created_at")
+
+  @@map("password_resets")
+}
+
 model Group {
   id        String   @id @default(uuid())
   name      String

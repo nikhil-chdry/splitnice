@@ -1,4 +1,4 @@
-function Navbar({ onNewExpense }) {
+function Navbar({ onNewExpense, user, onLogout }) {
   return (
     <header className="sticky top-0 z-50 flex items-center justify-between border-b border-ink/10 bg-cream/90 px-5 py-4 backdrop-blur-xl md:px-12">
       <a href="#dashboard" className="text-2xl font-bold tracking-[-0.06em]">
@@ -15,21 +15,29 @@ function Navbar({ onNewExpense }) {
         <a className="transition hover:text-ink" href="#activity">
           Activity
         </a>
-        <a className="transition hover:text-ink" href="#profile">
-          Profile
-        </a>
         <a className="transition hover:text-ink" href="#people">
           People
-         </a>
+        </a>
       </nav>
 
-      <button
-       type="button"
-       onClick={onNewExpense}
-        className="rounded-full bg-brand px-5 py-3 text-sm font-semibold text-white transition hover:opacity-90"
-         >
-         New Expense +
-      </button>
+      <div className="flex items-center gap-4">
+        <span className="hidden text-sm font-semibold md:block">
+          {user?.name}
+        </span>
+        <button
+          type="button"
+          onClick={onNewExpense}
+          className="rounded-full bg-brand px-5 py-3 text-sm font-semibold text-white transition hover:opacity-90"
+        >
+          New Expense +
+        </button>
+        <button
+          onClick={onLogout}
+          className="rounded-full border border-ink/15 px-4 py-2 text-sm font-semibold transition hover:bg-ink hover:text-white"
+        >
+          Log out
+        </button>
+      </div>
     </header>
   );
 }
